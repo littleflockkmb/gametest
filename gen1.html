@@ -480,13 +480,18 @@ function goToHomePage() {
 
 
 function saveScore() {
-    fetch('https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec', {
-    method: 'GET',
-    mode: 'no-cors' // ✅ Prevents CORS error
-})
-.then(response => response.json())
-.then(data => console.log("Fetched data:", data))
-.catch(error => console.error("CORS Error:", error));
+    fetch('https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec', {  
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, score })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data.message);
+        setTimeout(loadLeaderboard, 2000); 
+    })
+    .catch(error => console.error('Error:', error)); // ✅ Missing bracket was here
+} // ✅ Add this bracket if missing
 
 
 
@@ -524,13 +529,12 @@ function loadQuestion() {
     resultDisplay.textContent = "";
 }
 
+// Ensure all functions are closed properly
 
 window.addEventListener('load', () => {
     setTimeout(loadLeaderboard, 3000); // ✅ Load leaderboard after 3 sec
-});
+}); // ✅ Ensure this closing bracket exists
 
-
-   
- </script>
-  </body>
-</html>
+</script>
+</body>
+</html> // ✅ Ensure HTML is properly closed
