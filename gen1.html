@@ -414,8 +414,8 @@ function showFinalMessage() {
     correctSound.pause();
     wrongSound.pause();
 
-    // Play win sound 🎉
-    winSound.play();
+    // Try playing the win sound safely
+    winSound.play().catch(error => console.warn("Win sound failed to play:", error));
 
     // Show final message with Restart button
     document.getElementById("game-container").innerHTML = `
@@ -427,6 +427,7 @@ function showFinalMessage() {
 
     saveScore();
 }
+
 
 function restartGame() {
     currentQuestion = 0;
@@ -479,53 +480,38 @@ function goToHomePage() {
 
 
 function saveScore() {
-    fetch('https://script.google.com/macros/s/AKfycbyntsl74KCBWHJaASy1tqv4u8zx0mROzmPixoiAa94E9xedDERuUMYlpiaPKzlmrHbNTQ/exec', {  
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, score })
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log(data.message);
-        setTimeout(loadLeaderboard, 2000); // ✅ Wait 2 sec before loading leaderboard
-    })
-    .catch(error => console.error('Error:', error));
-}
+    fetch('https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec', {
+    method: 'GET',
+    mode: 'no-cors' // ✅ Prevents CORS error
+})
+.then(response => response.json())
+.then(data => console.log("Fetched data:", data))
+.catch(error => console.error("CORS Error:", error));
+
 
 
 
 function loadQuestion() {
+    const verseDisplay = document.getElementById("verse-display");
+    const choicesContainer = document.getElementById("choices-container");
+    const resultDisplay = document.getElementById("result");
+
+    if (!verseDisplay || !choicesContainer || !resultDisplay) {
+        console.error("Error: One or more elements are missing in the HTML.");
+        return;
+    }
+
     if (currentQuestion >= shuffledVerses.length) {
         showFinalMessage();
         return;
     }
 
-    answered = false; // ✅ Reset answered state
-    document.getElementById("next-button").disabled = true; // ✅ Disable "Next" button at the start
-
-    tickSound.pause();
-    tickSound.currentTime = 0;
-    tickSound.play();
-
-    timeLeft = 10;
-    document.getElementById("result").innerHTML = `⏳ Time Left: <b>${timeLeft}</b> seconds`;
-
-    clearInterval(timerInterval);
-    timerInterval = setInterval(() => {
-        timeLeft--;
-        document.getElementById("result").innerHTML = `⏳ Time Left: <b>${timeLeft}</b> seconds`;
-
-        if (timeLeft === 0) {
-            clearInterval(timerInterval);
-            document.getElementById("result").innerHTML = "⏳ Time's up! ❌";
-            disableChoices();
-        }
-    }, 1000);
+    answered = false;
+    document.getElementById("next-button").disabled = true;
 
     const q = shuffledVerses[currentQuestion];
-    document.getElementById("verse-display").textContent = q.verse;
-    const choicesContainer = document.getElementById("choices-container");
-    choicesContainer.innerHTML = ""; // ✅ Clear old choices
+    verseDisplay.textContent = q.verse;
+    choicesContainer.innerHTML = "";
 
     q.choices.forEach(choice => {
         let button = document.createElement("button");
@@ -535,7 +521,7 @@ function loadQuestion() {
         choicesContainer.appendChild(button);
     });
 
-    document.getElementById("result").textContent = "";
+    resultDisplay.textContent = "";
 }
 
 
